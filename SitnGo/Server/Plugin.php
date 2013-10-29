@@ -76,7 +76,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 
 	function onPlayerConnect($login, $isSpectator)
 	{
-//		$this->welcomePlayer($login);
+		$this->welcomePlayer($login);
 	}
 
 	function onPlayerDisconnect($login, $disconnectionReason)
@@ -248,7 +248,8 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 				case 3:
 					$window->setThirdNickname($playerNickname);
 					break;
-			//$this->connection->pay($player, $playerPrice, sprintf('You finished %d to the Sit\'n\'Go match', ($size - count($podium))));
+			}
+			$this->connection->pay($player, $playerPrice, sprintf('You finished %d to the Sit\'n\'Go match', ($size - count($podium))));
 		}
 	}
 
@@ -269,7 +270,6 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 	{
 		if ($state != $this->state)
 		{
-			\ManiaLive\Utilities\Logger::debug(sprintf('Change from %d to %d', $this->state, $state));
 			$this->matchService->updateMatchState($this->currentMatchId, $state);
 		}
 		$this->state = $state;

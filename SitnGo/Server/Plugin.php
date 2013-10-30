@@ -34,8 +34,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 				DedicatedEvent::ON_PLAYER_DISCONNECT |
 				DedicatedEvent::ON_BILL_UPDATED |
 				DedicatedEvent::ON_BEGIN_MATCH |
-				DedicatedEvent::ON_END_MATCH |
-				DedicatedEvent::ON_STATUS_CHANGED
+				DedicatedEvent::ON_END_MATCH
 		);
 		$this->cost = \ManiaLivePlugins\SitnGo\Config::getInstance()->cost;
 
@@ -50,6 +49,10 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 		{
 			case GameInfos::GAMEMODE_SCRIPT:
 				$this->gameMode = $this->storage->gameInfos->scriptName;
+				if($this->gameMode != 'Melee.Script.txt' && $this->gameMode != 'Royal.Script.txt')
+				{
+					throw new \ManiaLive\Application\CriticalEventException("Unseported game mode");
+				}
 				break;
 			case GameInfos::GAMEMODE_ROUNDS:
 				$this->gameMode = 'Rounds';
@@ -58,7 +61,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 				$this->gameMode = 'TimeAttack';
 				break;
 			case GameInfos::GAMEMODE_TEAM:
-				$this->gameMode = 'Team';
+				throw new \ManiaLive\Application\CriticalEventException("Unseported game mode");
 				break;
 			case GameInfos::GAMEMODE_LAPS:
 				$this->gameMode = 'Laps';
@@ -102,7 +105,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 			}
 
 			$maxPlayerPerMatch = \ManiaLivePlugins\SitnGo\Config::getInstance()->maxPlayerPerMatch;
-			if (count($this->matchService->getPlayersConfirmed($this->currentMatchId)) == $maxPlayerPerMatch)
+			if ($this->state == Services\Match::STATE_REGISTRATION_OPEN && count($this->matchService->getPlayersConfirmed($this->currentMatchId)) == $maxPlayerPerMatch)
 			{
 				$this->prepareMatch();
 			}
@@ -138,11 +141,6 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 		//If a match is in progress, stop it, and give a price to players
 	}
 	
-	function onStatusChanged($statusCode, $statusName)
-	{
-		
-	}
-
 	function onClickRegisterButton($login)
 	{
 		$registeredPlayers = count($this->matchService->getPlayersConfirmed($this->currentMatchId));
@@ -232,6 +230,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 		$window = \ManiaLivePlugins\SitnGo\Windows\PricesWindow::Create();
 
 		$i = 1;
+		$size = count($podium);
 		while ($player = array_shift($podium))
 		{
 			$playerPrice = $pricePart * pow(2, count($podium));

@@ -5,8 +5,8 @@ namespace ManiaLivePlugins\SitnGo;
 
 class Config extends \ManiaLib\Utils\Singleton
 {
-	public $cost = 1;
-	public $maxPlayerPerMatch = 1;
+	public $cost = 10;
+	public $maxPlayerPerMatch = 4;
 }
 
 ?>

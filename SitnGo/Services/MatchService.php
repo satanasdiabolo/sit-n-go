@@ -28,7 +28,7 @@ class MatchService
 	function registerTransaction($transactionId, $payer, $payee, $cost, $state)
 	{
 		$this->db->execute(
-				'INSERT INTO Transactions (id, payerLogin, payeeLogin, cost, creationDate, state) '.
+				'INSERT INTO SitnGo_Transactions (id, payerLogin, payeeLogin, cost, creationDate, state) '.
 				'VALUES (%d, %s, %s, %d, NOW(), %d)',
 				$transactionId, $this->db->quote($payer), $this->db->quote($payee), $cost, $state
 				);
@@ -36,25 +36,25 @@ class MatchService
 	
 	function updateTransaction($transactionId, $state)
 	{
-		$this->db->execute('UPDATE Transactions SET state = %d WHERE id = %d', $state, $transactionId);
+		$this->db->execute('UPDATE SitnGo_Transactions SET state = %d WHERE id = %d', $state, $transactionId);
 	}
 	
 	function registerPlayer($playerLogin,$matchId, $transactionId)
 	{
-		$this->db->execute('INSERT INTO Players (login, transactionId, matchId) VALUES (%s, %d, %d)',
+		$this->db->execute('INSERT INTO SitnGo_Players (login, transactionId, matchId) VALUES (%s, %d, %d)',
 				$this->db->quote($playerLogin), $transactionId, $matchId);
 	}
 	
 	function getPlayerLogin($transactionId)
 	{
-		return $this->db->execute('SELECT login FROM Players WHERE transactionId = %d', $transactionId)->fetchSingleValue();
+		return $this->db->execute('SELECT login FROM SitnGo_Players WHERE transactionId = %d', $transactionId)->fetchSingleValue();
 	}
 	
 	function isPlayerConfirmed($playerLogin, $matchId)
 	{
 		return $this->db->execute(
-				'SELECT count(*) FROM Players P '.
-				'INNER JOIN Transactions T ON P.transactionId = T.id '.
+				'SELECT count(*) FROM SitnGo_Players P '.
+				'INNER JOIN SitnGo_Transactions T ON P.transactionId = T.id '.
 				'WHERE P.login = %s AND P.matchId = %d AND T.state = %d', 
 				$this->db->quote($playerLogin), $matchId,
 				\DedicatedApi\Structures\Bill::STATE_PAYED)->fetchSingleValue();
@@ -63,8 +63,8 @@ class MatchService
 	function getPlayersConfirmed($matchId)
 	{
 		return $this->db->execute(
-				'SELECT login FROM Players P '.
-				'INNER JOIN Transactions T ON P.transactionId = T.id '.
+				'SELECT login FROM SitnGo_Players P '.
+				'INNER JOIN SitnGo_Transactions T ON P.transactionId = T.id '.
 				'WHERE P.matchId = %d AND T.state = %d', $matchId, \DedicatedApi\Structures\Bill::STATE_PAYED
 				)->fetchArrayOfSingleValues();
 	}
@@ -72,7 +72,7 @@ class MatchService
 	function createMatch($serverLogin, $serverGameMode, $state)
 	{
 		$this->db->execute(
-				'INSERT INTO `Matches` (serverLogin, serverGameMode, creationDate, state) '.
+				'INSERT INTO `SitnGo_Matches` (serverLogin, serverGameMode, creationDate, state) '.
 				'VALUES (%s, %s, NOW(), %d)', 
 				$this->db->quote($serverLogin), 
 				$this->db->quote($serverGameMode),
@@ -84,7 +84,7 @@ class MatchService
 	function updateMatchState($matchId, $state)
 	{
 		$this->db->execute(
-				'UPDATE `Matches` SET state = %d WHERE id = %d',
+				'UPDATE `SitnGo_Matches` SET state = %d WHERE id = %d',
 				$state, $matchId
 				);
 	}
@@ -93,7 +93,7 @@ class MatchService
 	{
 		$this->db->execute(				
 <<<EOMatches
-CREATE TABLE IF NOT EXISTS `Matches` (
+CREATE TABLE IF NOT EXISTS `SitnGo_Matches` (
 	`id` INT NOT NULL AUTO_INCREMENT,
 	`serverLogin` VARCHAR(25) NOT NULL,
 	`serverGameMode` VARCHAR(75) NOT NULL,
@@ -108,7 +108,7 @@ EOMatches
 		
 		$this->db->execute(				
 <<<EOTransactions
-CREATE TABLE IF NOT EXISTS `Transactions` (
+CREATE TABLE IF NOT EXISTS `SitnGo_Transactions` (
 	`id` INT NOT NULL,
 	`payerLogin` VARCHAR(25) NOT NULL,
 	`payeeLogin` VARCHAR(25) NOT NULL,
@@ -124,16 +124,16 @@ EOTransactions
 		
 		$this->db->execute(				
 <<<EOPlayers
-CREATE TABLE `Players` (
+CREATE TABLE IF NOT EXISTS `SitnGo_Players` (
 	`login` VARCHAR(25) NOT NULL,
 	`transactionId` INT NOT NULL,
 	`matchId` INT NOT NULL,
 	`rank` INT NULL DEFAULT NULL,
 	PRIMARY KEY (`login`, `transactionId`),
-	INDEX `FK__transactions` (`transactionId`),
-	INDEX `FK__matches` (`matchId`),
-	CONSTRAINT `FK__transactions` FOREIGN KEY (`transactionId`) REFERENCES `transactions` (`id`) ON UPDATE CASCADE ON DELETE NO ACTION,
-	CONSTRAINT `FK__matches` FOREIGN KEY (`matchId`) REFERENCES `matches` (`id`) ON UPDATE CASCADE ON DELETE NO ACTION
+	INDEX `FK_transactions` (`transactionId`),
+	INDEX `FK_matches` (`matchId`),
+	CONSTRAINT `FK_transactions` FOREIGN KEY (`transactionId`) REFERENCES `SitnGo_Transactions` (`id`) ON UPDATE CASCADE ON DELETE NO ACTION,
+	CONSTRAINT `FK_matches` FOREIGN KEY (`matchId`) REFERENCES `SitnGo_Matches` (`id`) ON UPDATE CASCADE ON DELETE NO ACTION
 )
 COLLATE='utf8_general_ci'
 ENGINE=InnoDB;

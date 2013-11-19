@@ -72,8 +72,10 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 			case GameInfos::GAMEMODE_STUNTS:
 				$this->gameMode = 'Stunts';
 				break;
+			default : throw new \ManiaLive\Application\CriticalEventException("Unseported game mode");
 		}
 		$this->matchService = new Services\MatchService();
+		$this->matchService->createTables();
 		$this->createMatch();
 	}
 
@@ -177,12 +179,17 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 
 	function endMatch($rankings)
 	{
+		$rankings = array_filter($rankings, function ($r) { return $r['Rank'] != 0;});
 		usort($rankings, function ($a, $b) {
-					if ($a['Ranking'] == $b['Ranking'])
+					if ($a['Rank'] == $b['Rank'])
 					{
 						return 0;
 					}
-					return $a['Ranking'] < $b['Ranking'] ? -1 : 1;
+					if($b['Rank'] == 0)
+					{
+						return -1;
+					}
+					return $a['Rank'] < $b['Rank'] ? -1 : 1;
 				}
 		);
 		$podium = array_slice($rankings, 0, 3);
@@ -233,7 +240,12 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 		$size = count($podium);
 		while ($player = array_shift($podium))
 		{
-			$playerPrice = $pricePart * pow(2, count($podium));
+			$playerPrice = (int)round($pricePart * pow(2, count($podium)));
+			if($playerPrice == 0)
+			{
+				$i++;
+				continue;
+			}
 			$playerNickname = $this->storage->getPlayerObject($player)->nickName;
 			switch ($i++)
 			{

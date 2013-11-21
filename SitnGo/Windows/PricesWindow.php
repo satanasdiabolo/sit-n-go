@@ -43,7 +43,6 @@ class PricesWindow extends \ManiaLive\Gui\Window
 	
 	function onConstruct()
 	{
-		$this->posY = 50;
 		$ui = new Elements\Bgs1InRace(165, 30);
 		$ui->setAlign('center', 'bottom');
 		$ui->setSubStyle(Elements\Bgs1InRace::BgList);
@@ -117,7 +116,7 @@ class PricesWindow extends \ManiaLive\Gui\Window
 		$this->firstLabel->setText($this->firstNickname);
 		$this->secondLabel->setText($this->secondNickname);
 		$this->thirdLabel->setText($this->thirdNickname);
-		$this->titleLabel->setText(sprintf('%s won %d planets', $this->firstNickname, $this->firstPrice));
+		$this->titleLabel->setText(sprintf('$<%s$> won %d planets', $this->firstNickname, $this->firstPrice));
 	}
 }
 

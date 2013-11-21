@@ -54,7 +54,7 @@ class RegistrationWindow extends \ManiaLive\Gui\Window
 		$this->addComponent($ui);
 		
 		$this->registrationButton = new Elements\Button;
-		$this->registrationButton->setText('Register');
+		$this->registrationButton->setText('Register (F6)');
 		$this->registrationButton->setAlign('center', 'bottom');
 		$this->registrationButton->setPosY(-43);
 		$this->addComponent($this->registrationButton);

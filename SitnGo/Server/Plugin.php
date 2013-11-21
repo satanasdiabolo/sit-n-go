@@ -38,6 +38,8 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 			DedicatedEvent::ON_END_MATCH
 		);
 		$this->cost = \ManiaLivePlugins\SitnGo\Config::getInstance()->cost;
+		$maxPlayers = $this->connection->getMaxPlayers();
+		\ManiaLivePlugins\SitnGo\Config::getInstance()->maxPlayerPerMatch = $maxPlayers['CurrentValue'];
 
 		$registrationAction = \ManiaLive\Gui\ActionHandler::getInstance()->createAction(array($this, 'onClickRegisterButton'));
 		\ManiaLivePlugins\SitnGo\Windows\RegistrationWindow::setRegisterAction($registrationAction);
@@ -230,6 +232,12 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 		{
 			return $p['Login'];
 		}, $podium);
+
+		foreach($rankings as $rank)
+		{
+			$this->matchService->updatePlayerRank($rank['Login'], $this->currentMatchId, $rank['Rank']);
+		}
+
 		$this->payPrices($podiumLogins);
 		$window = \ManiaLivePlugins\SitnGo\Windows\PricesWindow::Create();
 		$window->setPosY(-80);
